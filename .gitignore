@@ -6,6 +6,7 @@ src/
 *.js.map
 *.old
 tsconfig.json
+.DS_Store
 
 # Logs
 logs

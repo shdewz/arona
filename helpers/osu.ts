@@ -1,5 +1,4 @@
 require('dotenv').config();
-const axios = require('axios').default;
 const fetch = require('node-fetch');
 const moment = require('moment');
 const channelModel = require('../models/channel_schema.js');
@@ -25,7 +24,7 @@ export const getBeatmap = async (beatmap_id: string, options: beatmapOptions) =>
     return data;
 };
 
-export const getScores = async (user_id: string, mode: string, type: string, limit: number) => {
+export const getUserScores = async (user_id: string, mode: string, type: string, limit: number) => {
     let data = await apiCall(baseurl + `/users/${user_id}/scores/${type}?` + new URLSearchParams({
         mode: mode,
         limit: limit.toString(),
@@ -33,6 +32,15 @@ export const getScores = async (user_id: string, mode: string, type: string, lim
     }));
     return data.error ? { error: `User **${user_id}** not found.` } : data;
 };
+
+// export const getBeatmapScores = async (beatmap_id: number, user_id: string, mode: string) => {
+//     let data = await apiCall(baseurl + `/users/${user_id}/scores/${type}?` + new URLSearchParams({
+//         mode: mode,
+//         limit: limit.toString(),
+//         include_fails: '1'
+//     }));
+//     return data.error ? { error: `User **${user_id}** not found.` } : data;
+// };
 
 export const updateBeatmap = async (channel_id: string, beatmap_id: string) => {
     await channelModel.findOneAndUpdate({ id: channel_id }, { last_beatmap: beatmap_id }, { upsert: true, new: true });
@@ -61,8 +69,9 @@ const authorize = async () => {
 
 const apiCall = async (url: string) => {
     let auth = await getAuth();
-    let response = await axios.get(url, {
+    let response = await fetch(url, {
         headers: { Authorization: `Bearer ${auth.token.access_token}` }
-    }).catch(() => { return { error: 'not found' } });
-    return response.data || response;
+    });
+    let data = await response.json();
+    return data ?? response;
 }

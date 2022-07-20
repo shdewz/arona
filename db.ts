@@ -1,8 +1,9 @@
 require('dotenv').config();
 import mongoose from 'mongoose';
+const db_key: string = process.env.MONGODB ?? '';
 
 export const init = () => {
-    mongoose.connect(process.env.MONGODB);
+    mongoose.connect(db_key);
     const db = mongoose.connection;
 
     db.on('error', console.error.bind(console, 'connection error:'));

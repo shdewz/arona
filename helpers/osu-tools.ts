@@ -17,6 +17,10 @@ const emotes = [
     { name: 'hit300', color: 0x26abf8, emoji: '<:hit300:891673481115238492>' },
     { name: 'hit100', color: 0x23ec57, emoji: '<:hit100:891673481568194610>' },
     { name: 'hit50', color: 0xedc936, emoji: '<:hit50:891673481538846730>' },
+    { name: 'increase', color: 0x55ee5c, emoji: '<:increase:949320646318510121>' },
+    { name: 'decrease', color: 0xf94c4c, emoji: '<:decrease:949320646301745252>' },
+    { name: 'twitter', color: 0xdcddde, emoji: '<:twitter:949331827775135784>' },
+    { name: 'discord', color: 0xdcddde, emoji: '<:discord:949331827460550757>' },
 ];
 
 const download_map = async (beatmap_id: string) => {

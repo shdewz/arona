@@ -1,11 +1,11 @@
-import { CommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction } from 'discord.js';
 import userModel from '../../models/user_schema.js';
 import * as osu from '../../helpers/osu.js';
 import * as tools from '../../helpers/osu-tools.js';
 import * as moment from 'moment';
 import * as numeral from 'numeral';
 
-module.exports = async (interaction: CommandInteraction) => {
+module.exports = async (interaction: ChatInputCommandInteraction) => {
     let user_obj = await userModel.findOne({ user_id: interaction.member.user.id });
     let query = interaction.options.getString('user') || user_obj?.osu_id;
     if (!query) return interaction.editReply('You have not linked your account yet! Do it with the `/set osu:[user]` command.');
@@ -17,7 +17,7 @@ module.exports = async (interaction: CommandInteraction) => {
     let user = isNaN(query) ? (await osu.getUser(query, mode)).id : query;
     if (!user) return interaction.editReply(`User **${user}** not found!`);
 
-    let scores = await osu.getScores(user, mode, type, type == 'best' ? 100 : Math.max(20, index + 1));
+    let scores = await osu.getUserScores(user, mode, type, type == 'best' ? 100 : Math.max(20, index + 1));
     if (scores.error) return interaction.editReply(scores.error.charAt(0).toUpperCase() + scores.error.slice(1));
     if (scores.length == 0) return interaction.editReply('No recent plays found for this player.');
 
@@ -68,7 +68,7 @@ module.exports = async (interaction: CommandInteraction) => {
             separator: ' • ', indent: '> ',
             content: [
                 `<t:${Math.floor(moment.utc(score.created_at).valueOf() / 1000)}:R>`,
-                `**x${score.max_combo}**/${score.map.max_combo}`,
+                `**x${format(score.max_combo, '0,0')}**/${format(score.map.max_combo, '0,0')}`,
                 format(score.score, '0,0')
             ]
         }, score.rank !== 'F' ? null :
@@ -103,7 +103,7 @@ const format = (num: number, format: string) => numeral(num).format(format);
 const mapdate = mapset => moment.utc(mapset.ranked_date || mapset.submitted_date).format('yyyy');
 const completion = (h: hitCount, m) => (h.count_300 + h.count_100 + h.count_50 + h.count_miss) / (m.count_circles + m.count_sliders + m.count_spinners);
 
-const tryCount = (scores, index: number) => {
+const tryCount = (scores: any[], index: number) => {
     let tries = 0;
     let reference = scores[index];
     scores.splice(0, index);
