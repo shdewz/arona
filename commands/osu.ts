@@ -1,0 +1,41 @@
+import { CommandInteraction } from 'discord.js';
+
+export { };
+const mode_choices = [{ name: 'osu', value: 'osu' }, { name: 'taiko', value: 'taiko' }, { name: 'catch', value: 'fruits' }, { name: 'mania', value: 'mania' }];
+
+module.exports = {
+    name: 'osu',
+    description: 'Various osu! related commands',
+    type: 1,
+    options: [
+        {
+            name: 'profile',
+            description: 'Show the osu! profile of a player',
+            type: 1,
+            options: [
+                { name: 'user', description: 'osu! account ID or username', required: false, type: 3 },
+                { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
+            ]
+        },
+        {
+            name: 'recent',
+            description: 'Show the most recent osu! score of a player',
+            type: 1,
+            options: [
+                { name: 'user', description: 'osu! account ID or username', required: false, type: 3 },
+                { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
+                { name: 'best', description: 'limit to top scores', required: false, type: 5 },
+                { name: 'index', description: 'index of the score (1-100, default: 1)', required: false, type: 4 },
+            ]
+        }
+    ],
+    async execute(interaction: CommandInteraction) {
+        await interaction.deferReply();
+
+        switch (interaction.options.getSubcommand()) {
+            case 'profile': require('./sub/osu-profile.js')(interaction); break;
+            case 'recent': require('./sub/osu-recent.js')(interaction); break;
+            default: return;
+        }
+    }
+};

@@ -1,0 +1,45 @@
+{
+  "name": "shdewz-chan",
+  "version": "3.0.0",
+  "description": "hey",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shdewz/shdewz-chan.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shdewz/shdewz-chan/issues"
+  },
+  "homepage": "https://github.com/shdewz/shdewz-chan#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.3.0",
+    "axios": "^0.26.0",
+    "canvas": "^2.9.0",
+    "chance": "^1.1.8",
+    "chrono-node": "^2.3.7",
+    "console-stamp": "^3.0.4",
+    "discord-api-types": "^0.27.2",
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
+    "fs": "0.0.1-security",
+    "google-spreadsheet": "^3.2.0",
+    "moment": "^2.29.1",
+    "mongoose": "^6.2.2",
+    "node-fetch": "^2.6.7",
+    "numeral": "^2.0.6",
+    "ojsama": "^2.2.0",
+    "readline": "^1.3.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "rosu-pp": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/numeral": "^2.0.2",
+    "source-map-support": "^0.5.21"
+  }
+}
