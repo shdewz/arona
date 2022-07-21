@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "commonjs",
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "node",
+        "baseUrl": "./",
+        "sourceMap": true
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

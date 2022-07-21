@@ -1,11 +1,8 @@
-# a
-commands/old/
 src/
 .vscode/
 *.js
 *.js.map
 *.old
-tsconfig.json
 .DS_Store
 
 # Logs
