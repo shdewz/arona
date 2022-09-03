@@ -1,6 +1,5 @@
 import { ChatInputCommandInteraction } from 'discord.js';
 
-export { };
 const mode_choices = [{ name: 'osu', value: 'osu' }, { name: 'taiko', value: 'taiko' }, { name: 'catch', value: 'fruits' }, { name: 'mania', value: 'mania' }];
 
 module.exports = {
