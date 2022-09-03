@@ -85,7 +85,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
             color: tools.getEmote(score.rank).color,
             author: {
                 name: `${index == 0 ? 'M' : `${format(index + 1, '0o')} m`}ost recent osu!${modetext}${type == 'best' ? ' top' : ''} score for ${score.user.username}`,
-                icon_url: `https://a.ppy.sh/${score.user.id}`,
+                icon_url: `https://a.ppy.sh/${score.user.id}?${new Date().valueOf()}`,
                 url: `https://osu.ppy.sh/users/${score.user.id}`,
             },
             thumbnail: user_obj?.prefs?.score_style == 'compact' ? { url: score.beatmapset.covers['list'] } : null,
