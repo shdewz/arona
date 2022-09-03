@@ -1,8 +1,8 @@
-import { CommandInteraction, InteractionType } from "discord.js";
+import { InteractionType } from 'discord.js';
 
 module.exports = {
     name: 'interactionCreate',
-    execute: async interaction => {
+    execute: async (interaction: any) => { // find working type when not lazy
         if (interaction.type !== InteractionType.ApplicationCommand) return;
         const command = interaction.client.commands.get(interaction.commandName);
         if (!command) return;
