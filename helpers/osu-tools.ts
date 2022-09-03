@@ -23,7 +23,7 @@ const emotes = [
     { name: 'discord', color: 0xdcddde, emoji: '<:discord:949331827460550757>' },
 ];
 
-const download_map = async (beatmap_id: string) => {
+const downloadMap = async (beatmap_id: string) => {
     if (fs.existsSync(`src/beatmaps/${beatmap_id}.osu`)) return;
     fs.writeFileSync(`src/beatmaps/${beatmap_id}.osu`, await request(`https://osu.ppy.sh/osu/${beatmap_id}`));
 }
@@ -43,7 +43,7 @@ export const guessFc = (beatmap, combo: number, hits: hitCount) => hits.count_mi
 export const getAcc = (hits) => (hits.count_300 * 300 + hits.count_100 * 100 + hits.count_50 * 50) / (hits.count_300 * 300 + hits.count_100 * 300 + hits.count_50 * 300 + hits.count_miss * 300);
 
 export const diffCalc = async (beatmap_id: string, scores: Array<diffCalcScore>) => {
-    await download_map(beatmap_id);
+    await downloadMap(beatmap_id);
     return await rosu.calculate({
         path: `src/beatmaps/${beatmap_id}.osu`,
         params: scores
