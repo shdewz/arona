@@ -13,22 +13,36 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
     let modetext = mode == 'osu' ? '' : mode == 'fruits' ? 'catch' : mode;
     let index = Math.min(100, interaction.options.getInteger('index') || 1) - 1;
     let type = interaction.options.getBoolean('best') ? 'best' : 'recent';
+    let pass = interaction.options.getBoolean('pass');
 
     let user = isNaN(query) ? (await osu.getUser(query, mode)).id : query;
     if (!user) return interaction.editReply(`User **${user}** not found!`);
 
-    let scores = await osu.getUserScores(user, mode, type, type == 'best' ? 100 : Math.max(20, index + 1));
+    let scores = await osu.getUserScores(user, mode, type, 100);
     if (scores.error) return interaction.editReply(scores.error.charAt(0).toUpperCase() + scores.error.slice(1));
-    if (scores.length == 0) return interaction.editReply('No recent plays found for this player.');
+    if (scores.length == 0) return interaction.editReply('No recent scores found for this player.');
 
     scores.map((score, i) => { score.index = i; return score; });
+    if (pass) scores = scores.filter(score => score.passed === true);
     let score = type == 'best' ? scores.sort((a, b) => moment(b.created_at).valueOf() - moment(a.created_at).valueOf())[index] : scores[index];
+    if (!score) return interaction.editReply('No recent scores found for this player with specified criteria.');
     if (type == 'recent') score.try = tryCount(scores, index);
     let mods = score.mods.length == 0 ? 'NM' : score.mods.join('');
     let pptext = `**${format(score.pp, '0,0')}pp**`;
     score.map = await osu.getBeatmap(score.beatmap.id, { mods: mods, calc_diff: false, lb: false }); // https://github.com/ppy/osu-web/issues/8101
     let s = score.statistics;
     let c = completion(score.statistics, score.map);
+
+    // add pb and global rank
+    let personal_best = null;
+    let global_rank = null;
+    if (score.passed === true && type == 'recent' && score.best_id) {
+        let topscores = await osu.getUserScores(user, mode, 'best', 100);
+        let score_match = topscores.findIndex(sc => sc.id == score.best_id);
+        let fullscore = (await osu.getScore(score.best_id, mode))?.rank_global;
+        if (score_match !== -1) personal_best = score_match + 1;
+        if (fullscore) global_rank = fullscore;
+    }
 
     const options = [
         { mods: tools.reverseMods(mods, false), n300: s.count_300, n100: s.count_100, n50: s.count_50, nMisses: s.count_miss, combo: score.max_combo },
@@ -51,17 +65,24 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
                 score.pps ? ' (' + format(score.pps[0].stars, '0,0.00') + '★)' : null
             ]
         },
+        personal_best || global_rank ? {
+            separator: ' • ', indent: '> ',
+            content: [
+                personal_best ? `:medal: **#${personal_best} Personal Best**` : null,
+                global_rank ? `:globe_with_meridians:  **#${format(global_rank, '0,0')} Global**` : null,
+            ]
+        } : null,
         {
             separator: ' • ', indent: '> ',
             content: [
                 tools.getEmote(score.rank).emoji,
                 pptext || null,
                 format(score.accuracy, '0.00%'),
-                score.accuracy < 1 ? `[ ${[
-                    s.count_100 ? `\`${s.count_100}\` ${tools.getEmote('hit100').emoji} ` : null,
-                    s.count_50 ? `\`${s.count_50}\`${tools.getEmote('hit50').emoji}` : null,
-                    s.count_miss ? `\`${s.count_miss}\`${tools.getEmote('miss').emoji}` : null,
-                ].filter(e => e).join('• ')}]` : null,
+                score.accuracy < 1 ? ` ${[
+                    s.count_100 ? `**${s.count_100}** ${tools.getEmote('hit100').emoji} ` : null,
+                    s.count_50 ? `**${s.count_50}**${tools.getEmote('hit50').emoji}` : null,
+                    s.count_miss ? `**${s.count_miss}**${tools.getEmote('miss').emoji}` : null,
+                ].filter(e => e).join('/ ')}` : null,
             ]
         },
         {
@@ -75,7 +96,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
             {
                 separator: ' • ', indent: '> ',
                 content: [
-                    `\`[${'#'.repeat(Math.floor(c * 10)) + '-'.repeat(10 - Math.floor(c * 10))}]\` ${format(c, '0.00%')} completion`
+                    `\`${'█'.repeat(Math.floor(c * 10)) + ' '.repeat(10 - Math.floor(c * 10))}\` ${format(c, '0%')} completion`
                 ]
             }
     ];
@@ -84,7 +105,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         embeds: [{
             color: tools.getEmote(score.rank).color,
             author: {
-                name: `${index == 0 ? 'M' : `${format(index + 1, '0o')} m`}ost recent osu!${modetext}${type == 'best' ? ' top' : ''} score for ${score.user.username}`,
+                name: `${index == 0 ? 'M' : `${format(index + 1, '0o')} m`}ost recent osu!${modetext} ${type == 'best' ? ' top score' : pass ? 'pass' : 'score'} for ${score.user.username}`,
                 icon_url: `https://a.ppy.sh/${score.user.id}?${new Date().valueOf()}`,
                 url: `https://osu.ppy.sh/users/${score.user.id}`,
             },

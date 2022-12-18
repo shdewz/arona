@@ -5,7 +5,7 @@ const channelModel = require('../models/channel_schema.js');
 const baseurl = 'https://osu.ppy.sh/api/v2';
 const tools = require('./osu-tools.js');
 
-let osuauth: any = 0;
+let osuauth: any = { token: null, expires: 0 };
 
 export const getUser = async (user_id: string, mode: string) => {
     let data = await apiCall(baseurl + `/users/${user_id}/${mode}`);
@@ -33,6 +33,11 @@ export const getUserScores = async (user_id: string, mode: string, type: string,
     return data.error ? { error: `User **${user_id}** not found.` } : data;
 };
 
+export const getScore = async (score_id: string, mode: string) => {
+    let data = await apiCall(baseurl + `/scores/${mode}/${score_id}`);
+    return data.error ? { error: `Score **${score_id}** not found.` } : data;
+}
+
 // export const getBeatmapScores = async (beatmap_id: number, user_id: string, mode: string) => {
 //     let data = await apiCall(baseurl + `/users/${user_id}/scores/${type}?` + new URLSearchParams({
 //         mode: mode,
@@ -46,15 +51,12 @@ export const updateBeatmap = async (channel_id: string, beatmap_id: string) => {
     await channelModel.findOneAndUpdate({ id: channel_id }, { last_beatmap: beatmap_id }, { upsert: true, new: true });
 };
 
-const getAuth = async () => { return !osuauth || osuauth.expires - 60 < moment.utc().valueOf() ? await authorize() : osuauth }
+const getAuth = async () => { return !osuauth.token || osuauth.expires - 5000 < moment.utc().valueOf() ? await authorize() : osuauth }
 
 const authorize = async () => {
     let response = await fetch('https://osu.ppy.sh/oauth/token', {
         method: 'post',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({
             'grant_type': 'client_credentials',
             'client_id': process.env.OSU_CLIENT_ID,
@@ -69,9 +71,7 @@ const authorize = async () => {
 
 const apiCall = async (url: string) => {
     let auth = await getAuth();
-    let response = await fetch(url, {
-        headers: { Authorization: `Bearer ${auth.token.access_token}` }
-    });
+    let response = await fetch(url, { headers: { Authorization: `Bearer ${auth.token.access_token}` } });
     let data = await response.json();
     return data ?? response;
 }

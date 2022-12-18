@@ -24,6 +24,7 @@ module.exports = {
                 { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
                 { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
                 { name: 'best', description: 'limit to top scores', required: false, type: 5 },
+                { name: 'pass', description: 'limit to passes', required: false, type: 5 },
                 { name: 'index', description: 'index of the score (1-100, default: 1)', required: false, type: 4 },
             ]
         },
@@ -42,8 +43,8 @@ module.exports = {
         await interaction.deferReply();
 
         switch (interaction.options.getSubcommand()) {
-            case 'profile': require('./sub/osu-profile.js')(interaction); break;
-            case 'recent': require('./sub/osu-recent.js')(interaction); break;
+            case 'profile': require('./osu/profile.js')(interaction); break;
+            case 'recent': require('./osu/recent.js')(interaction); break;
             default: return;
         }
     }
