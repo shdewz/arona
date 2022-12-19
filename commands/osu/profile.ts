@@ -17,42 +17,63 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
     let rank_delta = !stats.global_rank ? null : user.rank_history.data[Math.floor(user.rank_history.data.length * (2 / 3))] - stats.global_rank;
 
     let lines = [
-        {
-            separator: ' ', indent: '> ',
+        !stats.global_rank ? null : {
+            separator: ' • ', indent: '> ',
             content: [
-                !stats.global_rank ? null : `**Rank:** \`#${format(stats.global_rank, '0,0')}`,
-                `(#${format(stats.country_rank, '0,0')} ${user.country_code})\``,
-                rank_delta == 0 ? null : `${tools.getEmote(rank_delta > 0 ? 'increase' : 'decrease').emoji}**${format(Math.abs(rank_delta), '0.[0]a')}**`
+                `**#${format(stats.global_rank, '0,0')}**`,
+                `#${format(stats.country_rank, '0,0')} ${user.country_code}`,
+                // `${tools.getEmote(rank_delta > 0 ? 'increase' : 'decrease').emoji} **${format(Math.abs(rank_delta), '0.[0]a')}**` // rank delta
             ]
         },
         {
-            separator: ' \u200b \u200b ', indent: '> ',
+            separator: ' • ', indent: '> ',
             content: [
-                !stats.pp ? null : `**PP:** \`${format(stats.pp, '0,0')}\``,
-                `**Acc:** \`${stats.hit_accuracy.toFixed(2)}%\``
+                !stats.pp ? null : `**${format(stats.pp, '0,0')}** pp`,
+                `**${stats.hit_accuracy.toFixed(2)}%** accuracy`
             ]
         },
         {
-            separator: ' \u200b \u200b ', indent: '> ',
+            separator: ' • ', indent: '> ',
             content: [
-                `**Level:** \`${stats.level.current}.${stats.level.progress}\``,
-                user.scores_first_count > 0 ? `**#1s:** \`${format(user.scores_first_count, '0,0')}\`` : null
+                `level **${stats.level.current}.${stats.level.progress}**`,
+                user.scores_first_count > 0 ? `**${format(user.scores_first_count, '0,0')}** first place${plural(user.scores_first_count)}` : user.badges.length == 0 ? null : `**${user.badges.length}** badge${plural(user.badges.length)}`
             ]
         },
-        user.badges.length == 0 ? null : {
-            separator: '', indent: '> ', content: [`**Badges:** \`${user.badges.length}\``]
+        user.badges.length == 0 || user.scores_first_count == 0 ? null : {
+            separator: ' • ', indent: '> ', content: [`**${user.badges.length}** badge${plural(user.badges.length)}`]
+        },
+        !stats.global_rank ? null : {
+            separator: ' • ', indent: '> ',
+            content: [
+                `peak **#${format(user.rank_highest.rank, '0,0')}** <t:${Math.round(moment.utc(user.rank_highest.updated_at).valueOf() / 1000)}:R>`,
+            ]
         },
         { separator: '', indent: '', content: ['\u200b'] },
         {
-            separator: '', indent: '> ',
-            content: [`**Playcount:** \`${format(stats.play_count, '0,0')} (${format(Math.round(stats.play_time / 60 / 60), '0,0')} h)\``]
+            separator: ' • ', indent: '> ',
+            content: [
+                `**${format(stats.play_count, '0,0')}** playcount`,
+                `**${format(Math.round(stats.play_time / 60 / 60), '0,0')}** hours`
+            ]
         },
         {
-            separator: '', indent: '> ',
-            content: [`**Ranked score:** \`${format(stats.ranked_score, '0,0')}\``]
+            separator: ' • ', indent: '> ',
+            content: [`**${format(stats.ranked_score, '0.00a')}** ranked score`, `**${format(stats.total_score, '0.00a')}** total`]
         },
         user.ranked_beatmapset_count == 0 ? null : {
-            separator: '', indent: '> ', content: [`**Ranked mapsets:** \`${user.ranked_beatmapset_count}\``]
+            separator: '', indent: '> ', content: [
+                `**${user.ranked_beatmapset_count}** ranked mapset${plural(user.ranked_beatmapset_count)}`
+            ]
+        },
+        user.loved_beatmapset_count == 0 ? null : {
+            separator: '', indent: '> ', content: [
+                `**${user.loved_beatmapset_count}** loved mapset${plural(user.loved_beatmapset_count)}`
+            ]
+        },
+        user.guest_beatmapset_count == 0 ? null : {
+            separator: '', indent: '> ', content: [
+                `**${user.guest_beatmapset_count}** guest ${user.guest_beatmapset_count == 1 ? 'difficulty' : 'difficulties'}`
+            ]
         },
         {
             separator: ' ', indent: '> ',
@@ -64,7 +85,14 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
                 `${tools.getEmote('A').emoji} **${stats.grade_counts.a}**`,
             ]
         },
-        !user.twitter && !user.discord ? null : { separator: '', indent: '', content: ['\u200b'] },
+        { separator: '', indent: '', content: ['\u200b'] },
+        {
+            separator: ' • ', indent: '> ',
+            content: [
+                `joined <t:${Math.round(moment.utc(user.join_date).valueOf() / 1000)}:R>`,
+                user.is_online ? 'currently online' : user.last_visit ? `last seen <t:${Math.round(moment.utc(user.last_visit).valueOf() / 1000)}:R>` : null,
+            ]
+        },
         !user.twitter && !user.discord ? null : {
             separator: ' • ', indent: '> ',
             content: [
@@ -94,3 +122,4 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
 }
 
 const format = (num: number, format: string) => numeral(num).format(format);
+const plural = (num: number) => num == 1 ? '' : 's';
