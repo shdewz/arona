@@ -22,11 +22,13 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
     if (scores.error) return interaction.editReply(scores.error.charAt(0).toUpperCase() + scores.error.slice(1));
     if (scores.length == 0) return interaction.editReply('No recent scores found for this player.');
 
-    scores.map((score, i) => { score.index = i; return score; });
-    if (pass) scores = scores.filter(score => score.passed === true);
-    let score = type == 'best' ? scores.sort((a, b) => moment(b.created_at).valueOf() - moment(a.created_at).valueOf())[index] : scores[index];
+    scores.map((sc, i) => { sc.index = i; return sc; });
+    let score =
+        type == 'best' ? scores.sort((a, b) => moment(b.created_at).valueOf() - moment(a.created_at).valueOf())[index] :
+            pass ? scores.filter(sc => sc.passed === true)[index] :
+                scores[index];
     if (!score) return interaction.editReply('No recent scores found for this player with specified criteria.');
-    if (type == 'recent') score.try = tryCount(scores, index);
+    if (type == 'recent') score.try = tryCount(scores, pass ? scores.findIndex(sc => sc.id == score.id) : index);
     let mods = score.mods.length == 0 ? 'NM' : score.mods.join('');
     let pptext = `**${format(score.pp, '0,0')}pp**`;
     score.map = await osu.getBeatmap(score.beatmap.id, { mods: mods, calc_diff: false, lb: false }); // https://github.com/ppy/osu-web/issues/8101
