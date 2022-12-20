@@ -70,7 +70,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         personal_best || global_rank ? {
             separator: ' • ', indent: '> ',
             content: [
-                personal_best ? `:medal: **#${personal_best} Personal Best**` : null,
+                personal_best ? `🏅 **#${personal_best} Personal Best**` : null,
                 global_rank ? `:globe_with_meridians:  **#${format(global_rank, '0,0')} Global**` : null,
             ]
         } : null,
@@ -107,7 +107,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         embeds: [{
             color: tools.getEmote(score.rank).color,
             author: {
-                name: `${index == 0 ? 'M' : `${format(index + 1, '0o')} m`}ost recent osu!${modetext} ${type == 'best' ? ' top score' : pass ? 'pass' : 'score'} for ${score.user.username}`,
+                name: `${index == 0 ? 'M' : `${format(index + 1, '0o')} m`}ost recent osu!${modetext} ${type == 'best' ? 'top score' : pass ? 'pass' : 'score'} for ${score.user.username}`,
                 icon_url: `https://a.ppy.sh/${score.user.id}?${new Date().valueOf()}`,
                 url: `https://osu.ppy.sh/users/${score.user.id}`,
             },
