@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from 'discord.js';
 
-const mode_choices = [{ name: 'osu', value: 'osu' }, { name: 'taiko', value: 'taiko' }, { name: 'catch', value: 'fruits' }, { name: 'mania', value: 'mania' }];
+const mode_choices = { name: 'mode', description: 'gamemode', required: false, type: 3, choices: [{ name: 'osu', value: 'osu' }, { name: 'taiko', value: 'taiko' }, { name: 'catch', value: 'fruits' }, { name: 'mania', value: 'mania' }] };
 
 module.exports = {
     name: 'osu',
@@ -13,7 +13,7 @@ module.exports = {
             type: 1,
             options: [
                 { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
-                { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
+                mode_choices,
             ]
         },
         {
@@ -22,7 +22,7 @@ module.exports = {
             type: 1,
             options: [
                 { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
-                { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
+                mode_choices,
                 { name: 'best', description: 'limit to top scores', required: false, type: 5 },
                 { name: 'pass', description: 'limit to passes', required: false, type: 5 },
                 { name: 'index', description: 'index of the score (1-100, default: 1)', required: false, type: 4 },
@@ -35,7 +35,7 @@ module.exports = {
             options: [
                 { name: 'map', description: 'beatmap id', required: true, type: 4 },
                 { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
-                { name: 'mode', description: 'gamemode', required: false, type: 3, choices: mode_choices },
+                mode_choices,
             ]
         }
     ],
@@ -45,6 +45,7 @@ module.exports = {
         switch (interaction.options.getSubcommand()) {
             case 'profile': require('./osu/profile.js')(interaction); break;
             case 'recent': require('./osu/recent.js')(interaction); break;
+            case 'scores': require('./osu/scores.js')(interaction); break;
             default: return;
         }
     }

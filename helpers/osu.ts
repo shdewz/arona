@@ -8,7 +8,7 @@ const tools = require('./osu-tools.js');
 let osuauth: any = { token: null, expires: 0 };
 
 export const getUser = async (user_id: string, mode: string) => {
-    let data = await apiCall(baseurl + `/users/${user_id}/${mode}`);
+    let data = await apiCall(baseurl + `/users/${user_id}${mode ? `/${mode}` : ''}`);
     return data.error ? { error: `User **${user_id}** not found.` } : data;
 };
 
@@ -26,7 +26,7 @@ export const getBeatmap = async (beatmap_id: string, options: beatmapOptions) =>
 
 export const getUserScores = async (user_id: string, mode: string, type: string, limit: number) => {
     let data = await apiCall(baseurl + `/users/${user_id}/scores/${type}?` + new URLSearchParams({
-        mode: mode,
+        ...(mode && { mode: mode }),
         limit: limit.toString(),
         include_fails: '1'
     }));
@@ -38,14 +38,10 @@ export const getScore = async (score_id: string, mode: string) => {
     return data.error ? { error: `Score **${score_id}** not found.` } : data;
 }
 
-// export const getBeatmapScores = async (beatmap_id: number, user_id: string, mode: string) => {
-//     let data = await apiCall(baseurl + `/users/${user_id}/scores/${type}?` + new URLSearchParams({
-//         mode: mode,
-//         limit: limit.toString(),
-//         include_fails: '1'
-//     }));
-//     return data.error ? { error: `User **${user_id}** not found.` } : data;
-// };
+export const getBeatmapScores = async (beatmap_id: string, user_id: string, mode: string) => {
+    let data = await apiCall(baseurl + `/beatmaps/${beatmap_id}/scores/users/${user_id}/all?` + new URLSearchParams({ ...(mode && { mode: mode }) }));
+    return data.error ? { error: `No scores found for user **${user_id}**.` } : data.scores;
+};
 
 export const updateBeatmap = async (channel_id: string, beatmap_id: string) => {
     await channelModel.findOneAndUpdate({ id: channel_id }, { last_beatmap: beatmap_id }, { upsert: true, new: true });
