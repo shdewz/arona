@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction } from 'discord.js';
 import userModel from '../../models/user_schema.js';
+import channelModel from '../../models/channel_schema.js';
 import * as osu from '../../helpers/osu.js';
 import * as tools from '../../helpers/osu-tools.js';
 import * as moment from 'moment';
@@ -9,14 +10,15 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
     let user_obj = await userModel.findOne({ user_id: interaction.member.user.id });
     let query = interaction.options.getString('user') || user_obj?.osu_id;
     if (!query) return interaction.editReply('You have not linked your account yet! Do it with the `/set osu:[user]` command.');
-    let mode = interaction.options.getString('mode') || 'osu';
-    let modetext = mode == 'osu' ? '' : mode == 'fruits' ? 'catch' : mode;
+    let mode = interaction.options.getString('mode') || null;
     let index = Math.min(100, interaction.options.getInteger('index') || 1) - 1;
     let type = interaction.options.getBoolean('best') ? 'best' : 'recent';
     let pass = interaction.options.getBoolean('pass');
 
-    let user = isNaN(query) ? (await osu.getUser(query, mode)).id : query;
+    let osu_user = await osu.getUser(query, mode);
+    let user = isNaN(query) ? osu_user.id : query;
     if (!user) return interaction.editReply(`User **${user}** not found!`);
+    if (!mode) mode = osu_user.playmode;
 
     let scores = await osu.getUserScores(user, mode, type, 100);
     if (scores.error) return interaction.editReply(scores.error.charAt(0).toUpperCase() + scores.error.slice(1));
@@ -51,20 +53,17 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         { mods: tools.reverseMods(mods, false), n300: s.count_300 + s.count_miss, n100: s.count_100, n50: s.count_50, nMisses: 0 }
     ];
 
-    if (mode == 'osu') {
-        score.fc = tools.guessFc(score.map, score.max_combo, score.statistics);
-        score.pps = await tools.diffCalc(score.beatmap.id, options);
-        pptext = `**${format(score.pp || score.pps[0].pp, '0,0')}pp**${!score.fc ? '/' + format(score.pps[1].pp, '0,0') + 'pp' : ''}`;
-    }
+    score.fc = tools.guessFc(score.map, score.max_combo, score.statistics);
+    score.pps = await tools.diffCalc(score.beatmap.id, options);
+    pptext = `**${format(score.pp || score.pps[0].pp, '0,0')}pp**${!score.fc ? '/' + format(score.pps[1].pp, '0,0') + 'pp' : ''}`;
+    let modetext = mode == 'osu' ? '' : mode == 'fruits' ? 'catch' : mode;
 
     let lines = [
         {
             separator: ' ', indent: '',
             content: [
                 type == 'best' ? `**${score.index + 1}.**` : null,
-                `**[${score.beatmapset.title} [${score.beatmap.version}]](https://osu.ppy.sh/beatmaps/${score.beatmap.id})**`,
-                `**+${mods}**`,
-                score.pps ? ' (' + format(score.pps[0].stars, '0,0.00') + '★)' : null
+                `**[${score.beatmapset.title} [${score.beatmap.version}]](https://osu.ppy.sh/beatmaps/${score.beatmap.id})**`
             ]
         },
         personal_best || global_rank ? {
@@ -77,8 +76,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         {
             separator: ' • ', indent: '> ',
             content: [
-                tools.getEmote(score.rank).emoji,
-                pptext || null,
+                `${tools.getEmote(score.rank).emoji} **+${mods}** (${format(score.pps[0].stars || 0, '0,0.00')}★)`,
                 format(score.accuracy, '0.00%'),
                 score.accuracy < 1 ? ` ${[
                     s.count_100 ? `**${s.count_100}** ${tools.getEmote('hit100').emoji} ` : null,
@@ -90,17 +88,18 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         {
             separator: ' • ', indent: '> ',
             content: [
-                `<t:${Math.floor(moment.utc(score.created_at).valueOf() / 1000)}:R>`,
+                pptext || null, ,
                 `**x${format(score.max_combo, '0,0')}**/${format(score.map.max_combo, '0,0')}`,
                 format(score.score, '0,0')
             ]
-        }, score.rank !== 'F' ? null :
-            {
-                separator: ' • ', indent: '> ',
-                content: [
-                    `\`${'█'.repeat(Math.floor(c * 10)) + ' '.repeat(10 - Math.floor(c * 10))}\` ${format(c, '0%')} completion`
-                ]
-            }
+        },
+        {
+            separator: ' • ', indent: '> ',
+            content: [
+                score.rank !== 'F' ? null : `\`${'█'.repeat(Math.floor(c * 10)) + ' '.repeat(10 - Math.floor(c * 10))}\` ${format(c, '0%')} completion`,
+                `<t:${Math.floor(moment.utc(score.created_at).valueOf() / 1000)}:R>`
+            ]
+        }
     ];
 
     await interaction.editReply({
@@ -120,6 +119,8 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
             }
         }]
     });
+
+    await channelModel.findOneAndUpdate({ id: interaction.channelId }, { last_beatmap: { id: score.beatmap.id, mode: mode } }, { upsert: true, new: true });
 }
 
 const format = (num: number, format: string) => numeral(num).format(format);
