@@ -37,6 +37,14 @@ module.exports = {
                 { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
                 mode_choices,
             ]
+        },
+        {
+            name: 'compare',
+            description: 'List the scores of a player on the latest map in the channel',
+            type: 1,
+            options: [
+                { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
+            ]
         }
     ],
     async execute(interaction: ChatInputCommandInteraction) {
@@ -46,6 +54,7 @@ module.exports = {
             case 'profile': require('./osu/profile.js')(interaction); break;
             case 'recent': require('./osu/recent.js')(interaction); break;
             case 'scores': require('./osu/scores.js')(interaction); break;
+            case 'compare': require('./osu/compare.js')(interaction); break;
             default: return;
         }
     }
