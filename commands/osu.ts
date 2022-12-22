@@ -29,6 +29,25 @@ module.exports = {
             ]
         },
         {
+            name: 'top',
+            description: 'Show the top scores of a player',
+            type: 1,
+            options: [
+                { name: 'user', description: 'osu! account id or username', required: false, type: 3 },
+                mode_choices,
+                { name: 'page', description: 'select the initial page', required: false, type: 4 },
+                { name: 'sort', description: 'change the sorting method', required: false, type: 3, choices: [
+                    { name: 'pp', value: 'pp' },
+                    { name: 'date', value: 'date' },
+                    { name: 'accuracy', value: 'accuracy' },
+                    { name: 'map date', value: 'map date' }
+                ] },
+                { name: 'reverse', description: 'reverse the list', required: false, type: 5 },
+                { name: 'search', description: 'search for plays containing the search query', required: false, type: 3 },
+                { name: 'mods', description: 'filter by mods (+mods to include, -mods to exclude, +mods! for exact)', required: false, type: 3 },
+            ]
+        },
+        {
             name: 'scores',
             description: 'List the scores of a player on a map',
             type: 1,
@@ -53,6 +72,7 @@ module.exports = {
         switch (interaction.options.getSubcommand()) {
             case 'profile': require('./osu/profile.js')(interaction); break;
             case 'recent': require('./osu/recent.js')(interaction); break;
+            case 'top': require('./osu/top.js')(interaction); break;
             case 'scores': require('./osu/scores.js')(interaction); break;
             case 'compare': require('./osu/compare.js')(interaction); break;
             default: return;
