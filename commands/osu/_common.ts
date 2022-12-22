@@ -3,7 +3,7 @@ import * as tools from '../../helpers/osu-tools.js';
 import * as moment from 'moment';
 import * as numeral from 'numeral';
 
-export const get = async (query: string, beatmap_id: string, mode: string, user_obj: any) => {
+export const scoreEmbed = async (query: string, beatmap_id: string, mode: string, user_obj: any) => {
     let user_osu = await osu.getUser(query, mode);
     let user = isNaN(Number(query)) ? user_osu.id : query;
     if (!user) return { error: `User **${user}** not found!` };
