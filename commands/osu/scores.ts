@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction } from 'discord.js';
 import userModel from '../../models/user_schema.js';
 import channelModel from '../../models/channel_schema.js';
-import * as osuScores from './_getscores.js';
+import * as common from './_common.js';
 
 module.exports = async (interaction: ChatInputCommandInteraction) => {
     let user_obj = await userModel.findOne({ user_id: interaction.member.user.id });
@@ -10,7 +10,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
     let mode = interaction.options.getString('mode') || null;
     let beatmap_id = interaction.options.getInteger('map').toString();
 
-    let scores = await osuScores.get(query, beatmap_id, mode, user_obj);
+    let scores = await common.scoreEmbed(query, beatmap_id, mode, user_obj);
     if (scores.error) return interaction.editReply(scores.error);
 
     await interaction.editReply({
