@@ -96,7 +96,7 @@ module.exports = async (interaction: ChatInputCommandInteraction) => {
         {
             separator: ' • ', indent: '> ',
             content: [
-                score.rank !== 'F' ? null : `\`${'█'.repeat(Math.floor(c * 10)) + ' '.repeat(10 - Math.floor(c * 10))}\` ${format(c, '0%')} completion`,
+                (score.rank !== 'F' || mode !== 'osu') ? null : `\`${'█'.repeat(Math.floor(c * 10)) + ' '.repeat(10 - Math.floor(c * 10))}\` ${format(c, '0%')} completion`,
                 `<t:${Math.floor(moment.utc(score.created_at).valueOf() / 1000)}:R>`
             ]
         }
