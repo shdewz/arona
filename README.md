@@ -9,6 +9,7 @@ awaa
 ```shell
 git clone https://github.com/shdewz/arona
 cd arona
+npm i typescript@4.5.5
 npm i
 ```
 
