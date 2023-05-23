@@ -2,6 +2,8 @@ awaa
 
 ## Setting up
 
+Make sure to have cargo installed
+
 ```shell
 git clone https://github.com/shdewz/arona
 cd arona
