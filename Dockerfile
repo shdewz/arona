@@ -1,6 +1,6 @@
 # Use Ubuntu as base
 # FROM ubuntu:22.04 as builder
-FROM node:18.16
+FROM node:16.15
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
